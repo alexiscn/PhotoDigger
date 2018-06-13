@@ -106,9 +106,18 @@ extension PhotoBrowserViewController: UICollectionViewDelegate, UICollectionView
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         let asset = fetchResult.object(at: indexPath.row)
+        
+        var assetInfo: [MetadataInfo] = []
+        assetInfo.append(("localIdentifier", asset.localIdentifier))
+        assetInfo.append(("creationDate", asset.creationDate ?? "(null)"))
+        assetInfo.append(("burstIdentifier", asset.burstIdentifier ?? "null"))
+        let assetGroup = MetadataGroup(title: "ASSET", metadatas: assetInfo)
+        
         asset.requestContentEditingInput(with: nil) { (input, _) in
             if let url = input?.fullSizeImageURL, let image = CIImage(contentsOf: url) {
-                let controller = PhotoMetadataViewController(dataSource: image.metadataGroups())
+                var groups = image.metadataGroups()
+                groups.insert(assetGroup, at: 0)
+                let controller = PhotoMetadataViewController(dataSource: groups)
                 let navigationController = UINavigationController(rootViewController: controller)
                 self.present(navigationController, animated: true, completion: nil)
             } else {
